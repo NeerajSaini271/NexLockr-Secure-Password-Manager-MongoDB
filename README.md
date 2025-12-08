@@ -1,4 +1,4 @@
-# <PassOP/> - Password Manager (MERN Stack)
+# `<PassOP/>` - Password Manager (MERN Stack)
 
 ![PassOP Interface](public/PassOP.png)
 
