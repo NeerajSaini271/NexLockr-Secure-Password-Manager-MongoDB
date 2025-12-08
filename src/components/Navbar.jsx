@@ -1,4 +1,5 @@
 import React from "react";
+import githubIcon from '../assets/Github.svg';
 
 const Navbar = () => {
   return (
@@ -17,7 +18,8 @@ const Navbar = () => {
           >
             <img
               className="invert cursor-pointer"
-              src="src\assets\Github.svg"
+              {/* src="src\assets\Github.svg" */}
+              src={githubIcon}
               alt="Github Logo"
             />
             <span className="font-semibold">Github</span>
