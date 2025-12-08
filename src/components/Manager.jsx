@@ -277,8 +277,8 @@ const Manager = () => {
                               width={20}
                               src={
                                 visiblePasswords[item.id]
-                                  ? {hideIcon}
-                                  : {viewIcon}
+                                  ? hideIcon
+                                  : viewIcon
                               }
                               alt="eye"
                             />
