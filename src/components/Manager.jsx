@@ -2,6 +2,8 @@ import React from "react";
 import { useRef, useState, useEffect } from "react";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
+import viewIcon from '../assets/view.png';
+import hideIcon from '../assets/hide.png';
 
 const Manager = () => {
   const ref = useRef();
@@ -275,8 +277,8 @@ const Manager = () => {
                               width={20}
                               src={
                                 visiblePasswords[item.id]
-                                  ? "src/assets/hide.png"
-                                  : "src/assets/view.png"
+                                  ? {hideIcon}
+                                  : {viewIcon}
                               }
                               alt="eye"
                             />
