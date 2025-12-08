@@ -1,8 +1,8 @@
 # <PassOP/> - Password Manager (MERN Stack)
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://passop-bm.netlify.app/)
-
 ![PassOP Interface](public/PassOP.png)
+
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://passop-bm.netlify.app/)
 
 **PassOP** is a secure and responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to store, view, edit, and delete their passwords securely.
 
