@@ -6,8 +6,11 @@ const cors = require("cors");
 
 dotenv.config();
 
+// Use the Environment Variable (Cloud) if available, otherwise use Localhost
+const url = process.env.MONGO_URI;
+
 // Connection URL
-const url = "mongodb://localhost:27017";
+// const url = "mongodb://localhost:27017";
 const client = new MongoClient(url);
 
 // Database Name
