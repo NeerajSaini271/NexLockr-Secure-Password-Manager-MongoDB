@@ -10,7 +10,8 @@ const Manager = () => {
   const [visiblePasswords, setVisiblePasswords] = useState({});
 
   let getPasswords = async () => {
-    let req = await fetch("http://localhost:3000");
+    // let req = await fetch("http://localhost:3000");
+    let req = await fetch("https://passop-password-manager-mongodb.onrender.com");    
     let passwords = await req.json();
     console.log(passwords);
     setpasswordArray(passwords);
