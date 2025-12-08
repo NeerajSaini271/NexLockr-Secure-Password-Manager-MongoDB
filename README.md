@@ -1,4 +1,3 @@
-````markdown
 # <PassOP/> - Password Manager (MERN Stack)
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://passop-bm.netlify.app/)
@@ -36,7 +35,7 @@ Open a terminal and navigate to the backend folder:
 ```bash
 cd backend
 npm install
-````
+
 
 Create a `.env` file in the `backend` folder and add your database connection string:
 
