@@ -1,7 +1,11 @@
 ````markdown
 # <PassOP/> - Password Manager (MERN Stack)
 
-**PassOP** is a secure and responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to store, view, edit, and delete their passwords locally using a MongoDB database.
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://passop-bm.netlify.app/)
+
+![PassOP Interface](public/PassOP.png)
+
+**PassOP** is a secure and responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to store, view, edit, and delete their passwords securely.
 
 ## 🚀 Features
 - **Add Passwords:** Save website URLs, usernames, and passwords securely.
@@ -14,17 +18,18 @@
 ## 🛠️ Tech Stack
 - **Frontend:** React (Vite), Tailwind CSS, React Toastify, Lottie/LordIcon
 - **Backend:** Node.js, Express.js, Body-Parser, CORS
-- **Database:** MongoDB (Local instance)
+- **Database:** MongoDB (Atlas/Local)
+- **Deployment:** Netlify (Frontend)
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Installation & Setup (Run Locally)
 
-This project is divided into two parts: the **Frontend** (root folder) and the **Backend** (`/backend` folder). You need to run both terminals simultaneously.
+If you want to run this project locally on your machine, follow these steps. You need to run both the **Frontend** and **Backend** terminals.
 
 ### 1. Prerequisites
 - [Node.js](https://nodejs.org/) installed.
-- [MongoDB Compass](https://www.mongodb.com/products/tools/compass) installed and running locally on `mongodb://localhost:27017`.
+- [MongoDB Compass](https://www.mongodb.com/products/tools/compass) installed and running locally on `mongodb://localhost:27017` (or use a MongoDB Atlas URI).
 
 ### 2. Setup Backend (Server)
 Open a terminal and navigate to the backend folder:
@@ -37,6 +42,7 @@ Create a `.env` file in the `backend` folder and add your database connection st
 
 ```env
 MONGO_URI=mongodb://localhost:27017
+# OR your MongoDB Atlas Connection String
 ```
 
 Start the server:
@@ -67,6 +73,8 @@ PassOP-Mongo/
 ├── backend/            # Express Server & MongoDB Logic
 │   ├── server.js       # API Routes (GET, POST, DELETE)
 │   └── package.json    # Backend dependencies
+├── public/             # Static Assets
+│   └── PassOP.png      # Project Screenshot
 ├── src/                # React Frontend
 │   ├── components/     # Navbar, Manager, Footer
 │   ├── App.jsx         # Main Component
