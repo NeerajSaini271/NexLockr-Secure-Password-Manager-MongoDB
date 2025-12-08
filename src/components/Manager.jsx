@@ -53,7 +53,7 @@ const Manager = () => {
       const passwordId = form.id || uuidv4(); // Use existing ID or generate new one
 
       //If any such id exists in the database,delete it
-      await fetch("http://localhost:3000", {
+      await fetch("https://passop-password-manager-mongodb.onrender.com", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: passwordId }),
@@ -62,7 +62,7 @@ const Manager = () => {
       const newPassword = { ...form, id: passwordId };
 
       setpasswordArray([...passwordArray, newPassword]);
-      await fetch("http://localhost:3000", {
+      await fetch("https://passop-password-manager-mongodb.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPassword),
@@ -103,7 +103,7 @@ const Manager = () => {
     let c = confirm("Do you really wanna delete this password?");
     if (c) {
       setpasswordArray(passwordArray.filter((item) => item.id !== id));
-      let res = await fetch("http://localhost:3000", {
+      let res = await fetch("https://passop-password-manager-mongodb.onrender.com", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
