@@ -1,4 +1,4 @@
-# <NexLockr /> - Secure Password Manager
+# \<NexLockr /> - Secure Password Manager
 
 ![NexLockr Interface](public/NexLockr.png)
 
