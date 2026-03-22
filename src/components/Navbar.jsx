@@ -1,30 +1,33 @@
 import React from "react";
-import githubIcon from '../assets/Github.svg';
+import githubIcon from "../assets/Github.svg";
 
 const Navbar = () => {
   return (
-    <nav className="bg-slate-800 text-white">
-      <div className="mycontainer flex justify-between items-center px-4 py-5 h-12">
-        <div className="logo font-bold text-xl">
-          <span className="text-green-500">&lt;</span>
-          Pass
-          <span className="text-green-500">OP / &gt;</span>
+    <nav className="bg-black/50 backdrop-blur-md border-b border-gray-800 text-white sticky top-0 z-50">
+      <div className="mycontainer flex justify-between items-center mx-auto px-4 py-3 h-16">
+        <div className="logo font-bold text-2xl tracking-wide">
+          <span className="text-indigo-500">&lt;</span>
+          <span className="text-white">Nex</span>
+          <span className="text-indigo-500">Lockr /&gt;</span>
         </div>
-        <button className="flex items-center gap-3 bg-slate-900 px-1 py-1 rounded-full cursor-pointer hover:bg-slate-950 ring-white ring-1">
-          <a
-            className="flex items-center gap-3"
-            href="https://github.com/NeerajSaini271"
-            target="_blank"
-          >
+
+        <a
+          href="https://github.com/NeerajSaini271"
+          target="_blank"
+          rel="noreferrer"
+          className="relative inline-flex h-10 w-fit overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50 hover:scale-105 transition-transform"
+        >
+          <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+          <span className="inline-flex gap-2 h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-950 px-5 py-1 text-sm font-medium text-gray-50 backdrop-blur-3xl">
             <img
-              className="invert cursor-pointer"
-              {/* src="src\assets\Github.svg" */}
+              className="invert w-5 h-5"
+              // src="src\assets\Github.svg"
               src={githubIcon}
               alt="Github Logo"
             />
             <span className="font-semibold">Github</span>
-          </a>
-        </button>
+          </span>
+        </a>
       </div>
     </nav>
   );
