@@ -1,18 +1,19 @@
-# `<PassOP/>` - Password Manager (MERN Stack)
+```markdown
+# <NexLockr /> - Secure Password Manager
 
-![PassOP Interface](public/PassOP.png)
+![NexLockr Interface](public/NexLockr.png)
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://passop-bm.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://nexlockr.netlify.app)
 
-**PassOP** is a secure and responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to store, view, edit, and delete their passwords securely.
+**NexLockr** is a secure, custom-designed, and highly responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to safely store, view, edit, and manage their web credentials in a sleek, dark-mode interface.
 
 ## 🚀 Features
 - **Add Passwords:** Save website URLs, usernames, and passwords securely.
-- **View & Toggle:** View saved passwords with a "Show/Hide" eye toggle.
-- **Copy to Clipboard:** One-click copy feature for websites, usernames, and passwords.
-- **Edit & Delete:** Update credentials or remove them from the database.
-- **Responsive UI:** Built with **Tailwind CSS** for a modern, mobile-friendly design.
-- **Backend API:** Custom Node.js/Express server connecting to MongoDB.
+- **Custom Visibility Toggle:** Engineered a state-driven "Show/Hide" eye toggle to instantly mask or unmask saved credentials on demand.
+- **Copy to Clipboard:** One-click copy functionality for quickly grabbing websites, usernames, and passwords.
+- **Edit & Delete:** Easily update existing credentials or remove them from the database.
+- **Premium Dark-Mode UI:** Fully overhauled frontend using **Tailwind CSS** for a modern, high-contrast, and custom user experience.
+- **Backend API:** Custom Node.js/Express server connecting to MongoDB for persistent data storage.
 
 ## 🛠️ Tech Stack
 - **Frontend:** React (Vite), Tailwind CSS, React Toastify, Lottie/LordIcon
@@ -35,7 +36,7 @@ Open a terminal and navigate to the backend folder:
 ```bash
 cd backend
 npm install
-
+```
 
 Create a `.env` file in the `backend` folder and add your database connection string:
 
@@ -52,7 +53,7 @@ node server.js
 
 *The server will run on `http://localhost:3000`*
 
-### 3\. Setup Frontend (Client)
+### 3. Setup Frontend (Client)
 
 Open a **new** terminal (split terminal) in the project root:
 
@@ -63,17 +64,17 @@ npm run dev
 
 *The application will run on `http://localhost:5173`*
 
------
+---
 
 ## 📂 Project Structure
 
-```
-PassOP-Mongo/
+```text
+NexLockr/
 ├── backend/            # Express Server & MongoDB Logic
 │   ├── server.js       # API Routes (GET, POST, DELETE)
 │   └── package.json    # Backend dependencies
 ├── public/             # Static Assets
-│   └── PassOP.png      # Project Screenshot
+│   └── NexLockr.png    # Project Screenshot
 ├── src/                # React Frontend
 │   ├── components/     # Navbar, Manager, Footer
 │   ├── App.jsx         # Main Component
@@ -83,8 +84,10 @@ PassOP-Mongo/
 
 ## 🤝 Contributing
 
-Feel free to fork this repository and submit pull requests to improve the UI or add features (like authentication\!).
+Feel free to fork this repository and submit pull requests to improve the UI or add features (like full user authentication!).
 
------
+---
 
 *Created by [Neeraj Saini](https://github.com/NeerajSaini271)*
+```
+
