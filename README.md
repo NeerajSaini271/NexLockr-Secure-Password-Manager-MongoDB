@@ -1,4 +1,3 @@
-```markdown
 # <NexLockr /> - Secure Password Manager
 
 ![NexLockr Interface](public/NexLockr.png)
@@ -89,5 +88,3 @@ Feel free to fork this repository and submit pull requests to improve the UI or 
 ---
 
 *Created by [Neeraj Saini](https://github.com/NeerajSaini271)*
-```
-
