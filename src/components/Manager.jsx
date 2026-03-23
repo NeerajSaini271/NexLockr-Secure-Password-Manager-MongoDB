@@ -315,7 +315,7 @@ const Manager = () => {
                                     : viewIcon
                                 }
                                 alt="eye"
-                                className="invert h-5 w-5 shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+                                className="brightness-0 invert h-5 w-5 shrink-0 opacity-70 hover:opacity-100 transition-opacity"
                               />
                             </span>
                             <div
