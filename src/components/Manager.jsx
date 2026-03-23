@@ -297,26 +297,25 @@ const Manager = () => {
                         </td>
                         <td className="py-2 border-b border-gray-800 text-center md:w-1/3">
                           <div className="flex items-center justify-center gap-3">
-                            <span className="tracking-widest">
+                            <span className="tracking-widest w-32 inline-block overflow-hidden text-ellipsis whitespace-nowrap text-center">
                               {visiblePasswords[item.id]
                                 ? item.Password
                                 : "•".repeat(item.Password.length)}
                             </span>
 
                             <span
-                              className="cursor-pointer"
+                              className="cursor-pointer flex items-center justify-center shrink-0 min-w-[24px] min-h-[24px]"
                               onClick={() => showPassword(item.id)}
                             >
                               <img
                                 ref={ref}
-                                width={20}
                                 src={
                                   visiblePasswords[item.id]
                                     ? hideIcon
                                     : viewIcon
                                 }
                                 alt="eye"
-                                className="invert opacity-70 hover:opacity-100 transition-opacity"
+                                className="invert h-5 w-5 shrink-0 opacity-70 hover:opacity-100 transition-opacity"
                               />
                             </span>
                             <div
