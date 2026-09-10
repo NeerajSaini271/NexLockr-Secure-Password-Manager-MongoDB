@@ -417,7 +417,7 @@ export default function Manager({ onAuthChange }) {
                         </button>
                         <button
                           type="button"
-                          className="col-span-3 inline-flex min-h-[38px] items-center justify-center rounded-xl border border-red-300 bg-red-50 px-3 text-[0.78rem] font-semibold text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200"
+                          className="col-span-3 inline-flex min-h-[38px] items-center justify-center rounded-xl border border-red-300 bg-red-50 px-3 text-[0.78rem] font-semibold text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200 dark:hover:bg-red-950/40"
                           onClick={() => removeCredential(item.id)}
                         >
                           Delete
