@@ -1,22 +1,46 @@
-import React from "react";
-
-const Footer = () => {
+export default function Footer({ onNavigate }) {
   return (
-    <div className="bg-black/50 backdrop-blur-md border-t border-gray-800 text-white text-center py-4 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-10 w-full relative z-10">
-      <div className="logo font-bold text-xl tracking-wide">
-        <span className="text-indigo-500">&lt;</span>
-        <span className="text-white">Nex</span>
-        <span className="text-indigo-500">Lockr /&gt;</span>
+    <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+      <div className="mx-auto grid w-[min(1180px,calc(100%-2rem))] gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <button
+            onClick={() => onNavigate("home")}
+            className="text-xl font-black text-slate-950 dark:text-white"
+          >
+            <span className="text-indigo-600">&lt;</span>Nex
+            <span className="text-indigo-600">Lockr /&gt;</span>
+          </button>
+          <p className="mt-4 max-w-sm leading-7 text-slate-600 dark:text-slate-400">
+            An encrypted credential vault with authenticated, owner-isolated
+            storage.
+          </p>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-950 dark:text-white">Product</h3>
+          <div className="mt-4 grid gap-3 text-slate-600 dark:text-slate-400">
+            <button className="text-left" onClick={() => onNavigate("home")}>
+              Home
+            </button>
+            <button className="text-left" onClick={() => onNavigate("vault")}>
+              Vault
+            </button>
+            <a href="https://github.com/NeerajSaini271/NexLockr-Secure-Password-Manager-MongoDB">
+              Source code
+            </a>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-950 dark:text-white">
+            Built with
+          </h3>
+          <p className="mt-4 leading-7 text-slate-600 dark:text-slate-400">
+            React, Tailwind CSS, Express, MongoDB and Node.js.
+          </p>
+        </div>
       </div>
-
-      <div className="text-gray-300 font-medium">
-        Made by{" "}
-        <span className="text-indigo-400 font-semibold tracking-wide">
-          Neeraj
-        </span>
+      <div className="border-t border-slate-200 py-5 text-center text-sm text-slate-500 dark:border-slate-800">
+        © {new Date().getFullYear()} NexLockr. Built by Neeraj Kumar Saini.
       </div>
-    </div>
+    </footer>
   );
-};
-
-export default Footer;
+}

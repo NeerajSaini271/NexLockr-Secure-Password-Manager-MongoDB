@@ -1,379 +1,436 @@
-import React from "react";
-import { useRef, useState, useEffect } from "react";
-import { ToastContainer, toast, Bounce } from "react-toastify";
-import { v4 as uuidv4 } from "uuid";
+import { useCallback, useEffect, useState } from "react";
+import { Bounce, ToastContainer, toast } from "react-toastify";
+import { getToken, request, setToken } from "../api/client";
 import viewIcon from "../assets/view.png";
 import hideIcon from "../assets/hide.png";
+import GlowButton from "./GlowButton";
 
-const Manager = () => {
-  const ref = useRef();
-  const [form, setform] = useState({ site: "", Username: "", Password: "" });
-  const [passwordArray, setpasswordArray] = useState([]);
-  const [visiblePasswords, setVisiblePasswords] = useState({});
+const emptyCredential = { site: "", username: "", password: "" };
 
-  let getPasswords = async () => {
-    // let req = await fetch("http://localhost:3000");
-    let req = await fetch(
-      "https://passop-password-manager-mongodb.onrender.com",
-    );
-    let passwords = await req.json();
-    console.log(passwords);
-    setpasswordArray(passwords);
-  };
+export default function Manager({ onAuthChange }) {
+  const [session, setSession] = useState(Boolean(getToken()));
+  const [authMode, setAuthMode] = useState("login");
+  const [auth, setAuth] = useState({ email: "", password: "" });
+  const [form, setForm] = useState(emptyCredential);
+  const [credentials, setCredentials] = useState([]);
+  const [visible, setVisible] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(Boolean(getToken()));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const filteredCredentials = credentials.filter((item) =>
+    `${item.site} ${item.username}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
+  );
+
+  const loadCredentials = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setCredentials(await request("/api/credentials"));
+    } catch (err) {
+      setError(err.message);
+      if (/session|authentication/i.test(err.message)) {
+        setToken(null);
+        setSession(false);
+        onAuthChange(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [onAuthChange]);
 
   useEffect(() => {
-    getPasswords();
-  }, []);
+    if (session) loadCredentials();
+  }, [session, loadCredentials]);
 
-  const copyText = (text) => {
-    toast(" Copied to clipboard", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "dark",
-      transition: Bounce,
-    });
-
-    navigator.clipboard.writeText(text);
-  };
-
-  const showPassword = (id) => {
-    setVisiblePasswords({
-      ...visiblePasswords,
-      [id]: !visiblePasswords[id],
-    });
-  };
-
-  const savePassword = async () => {
-    if (
-      form.site.length > 3 &&
-      form.Username.length > 3 &&
-      form.Password.length
-    ) {
-      const passwordId = form.id || uuidv4(); // Use existing ID or generate new one
-
-      //If any such id exists in the database,delete it
-      await fetch("https://passop-password-manager-mongodb.onrender.com", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: passwordId }),
-      });
-
-      const newPassword = { ...form, id: passwordId };
-
-      setpasswordArray([...passwordArray, newPassword]);
-      await fetch("https://passop-password-manager-mongodb.onrender.com", {
+  async function submitAuth(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const data = await request(`/api/auth/${authMode}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPassword),
+        body: JSON.stringify(auth),
       });
-      // localStorage.setItem(
-      //   "passwords",
-      //   JSON.stringify([...passwordArray, { ...form, id: uuidv4() }])
-      // );
-      setform({ site: "", Username: "", Password: "" });
-      toast("Password saved", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        transition: Bounce,
-      });
-    } else {
-      toast("Error: Password not saved", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      setToken(data.token);
+      setSession(true);
+      onAuthChange(true);
+      setAuth({ email: "", password: "" });
+      toast.success(authMode === "login" ? "Signed in" : "Account created");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  const deletePassword = async (id) => {
-    console.log("Delete Password with id:", id);
-    let c = confirm("Do you really wanna delete this password?");
-    if (c) {
-      setpasswordArray(passwordArray.filter((item) => item.id !== id));
-      let res = await fetch(
-        "https://passop-password-manager-mongodb.onrender.com",
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id }),
-        },
+  async function saveCredential(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const path = editingId
+        ? `/api/credentials/${editingId}`
+        : "/api/credentials";
+      const saved = await request(path, { method, body: JSON.stringify(form) });
+      setCredentials((current) =>
+        editingId
+          ? current.map((item) => (item.id === editingId ? saved : item))
+          : [saved, ...current],
       );
-      // localStorage.setItem(
-      //   "passwords",
-      //   JSON.stringify(passwordArray.filter((item) => item.id !== id))
-      // );
-      console.log(passwordArray);
-      toast(" Password Deleted", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        transition: Bounce,
-      });
+      toast.success(editingId ? "Credential updated" : "Credential saved");
+      setForm(emptyCredential);
+      setEditingId(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  const editPassword = (id) => {
-    console.log("Edit Password with id:", id);
-    setform({ ...passwordArray.filter((i) => i.id === id)[0], id: id });
-    setpasswordArray(passwordArray.filter((item) => item.id !== id));
-  };
+  async function removeCredential(id) {
+    if (
+      !window.confirm(
+        "Delete this saved credential? This action cannot be undone.",
+      )
+    )
+      return;
+    setBusy(true);
+    setError("");
+    try {
+      await request(`/api/credentials/${id}`, { method: "DELETE" });
+      setCredentials((current) => current.filter((item) => item.id !== id));
+      toast.success("Credential deleted");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  const handleChange = (e) => {
-    setform({ ...form, [e.target.name]: e.target.value });
-  };
+  async function copyText(text, label) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Clipboard access was denied");
+    }
+  }
 
+  function beginEdit(item) {
+    setEditingId(item.id);
+    setForm({
+      site: item.site,
+      username: item.username,
+      password: item.password,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(emptyCredential);
+  }
   return (
     <>
       <ToastContainer
         position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        autoClose={3500}
         theme="dark"
-        transition={"Bounce"}
+        transition={Bounce}
       />
-
-      <div className="p-4 md:mycontainer mx-auto rounded-xs min-h-[85.7vh] md:w-3/4 relative z-10">
-        <h1 className="text-4xl font-bold text-center">
-          <span className="text-indigo-500">&lt;</span>
-          <span className="text-white">Nex</span>
-          <span className="text-indigo-500">Lockr /&gt;</span>
-        </h1>
-
-        <p className="text-indigo-300 text-lg text-center mt-2 mb-6">
-          Secure Password Manager
-        </p>
-
-        <div className="flex flex-col py-4 gap-4 items-center">
-          <input
-            value={form.site}
-            onChange={handleChange}
-            placeholder="Enter Website URL"
-            className="bg-gray-950 text-gray-100 rounded-full border border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none w-full px-5 py-2.5 placeholder-gray-400 transition-all"
-            type="text"
-            name="site"
-            id="site"
-          />
-
-          <div className="flex flex-col md:flex-row gap-4 w-full">
-            <input
-              value={form.Username}
-              onChange={handleChange}
-              placeholder="Enter Username"
-              className="bg-gray-950 text-gray-100 rounded-full border border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none w-full px-5 py-2.5 placeholder-gray-400 transition-all"
-              type="text"
-              name="Username"
-              id="username"
-            />
-
-            <div className="relative w-full">
-              <input
-                value={form.Password}
-                onChange={handleChange}
-                placeholder="Enter Password"
-                className="bg-gray-950 text-gray-100 rounded-full border border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none w-full px-5 py-2.5 placeholder-gray-400 transition-all"
-                type="password"
-                name="Password"
-                id="password"
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={savePassword}
-            className="relative inline-flex h-12 w-fit overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50 mt-4"
+      <section className="relative mx-auto min-h-0 w-[min(1100px,calc(100%-2rem))] overflow-x-clip py-4 pb-6 sm:py-6 sm:pb-8 md:py-8 md:pb-10 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:-z-10 before:h-[650px] before:bg-[radial-gradient(circle_at_50%_10%,rgba(99,102,241,0.10),transparent_58%)] dark:before:bg-[radial-gradient(circle_at_50%_10%,rgba(99,102,241,0.12),transparent_58%)]">
+        {!session ? (
+          <form
+            className="mx-auto grid w-full max-w-[520px] gap-[18px] rounded-3xl border border-indigo-200/80 bg-white/92 p-5 sm:p-[clamp(1.5rem,5vw,2.625rem)] shadow-[0_24px_70px_rgba(79,70,229,0.14)] backdrop-blur-2xl dark:border-[#29314c] dark:bg-[rgba(10,15,35,0.88)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
+            onSubmit={submitAuth}
           >
-            <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-            <span className="inline-flex gap-2 h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-950 px-8 py-1 text-sm font-medium text-gray-50 backdrop-blur-3xl">
-              <lord-icon
-                src="https://cdn.lordicon.com/gzqofmcx.json"
-                trigger="hover"
-                colors="primary:#ffffff,secondary:#ffffff"
-              ></lord-icon>
-              Save Password
-            </span>
-          </button>
-        </div>
+            <h2 className="m-0 text-2xl font-bold">
+              {authMode === "login"
+                ? "Sign in to your vault"
+                : "Create your vault"}
+            </h2>
+            <p className="m-0 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3.5 leading-relaxed text-amber-900 dark:border-[#6b4d18] dark:bg-[rgba(120,53,15,0.24)] dark:text-amber-200">
+              For personal testing only. Avoid storing critical real-world
+              credentials.
+            </p>
+            <label className="grid gap-2 font-bold text-slate-700 dark:text-indigo-200">
+              Email
+              <input
+                className="min-h-12 w-full rounded-xl border border-[#303958] bg-white px-3.5 text-slate-900 shadow-sm dark:bg-[#070b1b] dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                type="email"
+                autoComplete="email"
+                value={auth.email}
+                onChange={(e) => setAuth({ ...auth, email: e.target.value })}
+                required
+              />
+            </label>
+            <label className="grid gap-2 font-bold text-slate-700 dark:text-indigo-200">
+              Account password
+              <input
+                className="min-h-12 w-full rounded-xl border border-[#303958] bg-white px-3.5 text-slate-900 shadow-sm dark:bg-[#070b1b] dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                type="password"
+                autoComplete={
+                  authMode === "login" ? "current-password" : "new-password"
+                }
+                minLength="12"
+                maxLength="128"
+                value={auth.password}
+                onChange={(e) => setAuth({ ...auth, password: e.target.value })}
+                required
+              />
+            </label>
+            {error && (
+              <p className="m-0 text-red-300" role="alert">
+                {error}
+              </p>
+            )}
+            <GlowButton disabled={busy}>
+              {busy
+                ? "Please wait..."
+                : authMode === "login"
+                  ? "Sign in"
+                  : "Create account"}
+            </GlowButton>
+            <button
+              className="min-h-10.5 rounded-xl border-0 bg-transparent px-[15px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-300 disabled:cursor-wait disabled:opacity-65"
+              type="button"
+              onClick={() => {
+                setAuthMode(authMode === "login" ? "register" : "login");
+                setError("");
+              }}
+            >
+              {authMode === "login"
+                ? "Create an account"
+                : "Already have an account? Sign in"}
+            </button>
+          </form>
+        ) : (
+          <>
+            <form
+              className="grid grid-cols-1 gap-[18px] rounded-3xl border border-slate-200 bg-white/95 dark:border-[#29314c] dark:bg-[rgba(10,15,35,0.88)] p-5 sm:p-[clamp(1.5rem,5vw,2.625rem)] shadow-[0_14px_36px_rgba(79,70,229,0.10)] backdrop-blur-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.28)] md:grid-cols-2"
+              onSubmit={saveCredential}
+            >
+              <div className="md:col-span-2">
+                <h2 className="m-0 text-2xl font-bold">
+                  {editingId ? "Update credential" : "Add credential"}
+                </h2>
+                <p className="mt-2 text-[#a8b0c7]">
+                  Values are encrypted by the API before MongoDB storage.
+                </p>
+              </div>
+              <label className="grid gap-2 font-bold text-slate-700 dark:text-indigo-200">
+                Website URL
+                <input
+                  className="min-h-12 w-full rounded-xl border border-[#303958] bg-white px-3.5 text-slate-900 shadow-sm dark:bg-[#070b1b] dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                  type="text"
+                  name="site"
+                  placeholder="https://example.com"
+                  value={form.site}
+                  onChange={(e) => setForm({ ...form, site: e.target.value })}
+                  required
+                />
+              </label>
+              <label className="grid gap-2 font-bold text-slate-700 dark:text-indigo-200">
+                Username
+                <input
+                  className="min-h-12 w-full rounded-xl border border-[#303958] bg-white px-3.5 text-slate-900 shadow-sm dark:bg-[#070b1b] dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                  type="text"
+                  name="username"
+                  placeholder="Enter username"
+                  autoComplete="username"
+                  value={form.username}
+                  onChange={(e) =>
+                    setForm({ ...form, username: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="grid gap-2 font-bold text-slate-700 dark:text-indigo-200">
+                Password
+                <input
+                  className="min-h-12 w-full rounded-xl border border-[#303958] bg-white px-3.5 text-slate-900 shadow-sm dark:bg-[#070b1b] dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                  type="password"
+                  name="password"
+                  placeholder="Enter password"
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              {error && (
+                <p className="m-0 text-red-300" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="flex gap-2.5 md:col-span-2">
+                <GlowButton disabled={busy}>
+                  {busy
+                    ? "Saving..."
+                    : editingId
+                      ? "Update credential"
+                      : "Save credential"}
+                </GlowButton>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="min-h-10.5 rounded-xl border border-[#394363] bg-[#121a36] px-[15px] text-indigo-50 disabled:cursor-wait disabled:opacity-65"
+                    onClick={cancelEdit}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
 
-        <div className="passwords mt-8">
-          <h2 className="font-bold text-2xl py-4 text-white">Your Passwords</h2>
-          {passwordArray.length === 0 && (
-            <div className="text-gray-400">No passwords to Show</div>
-          )}
-          {passwordArray.length !== 0 && (
-            <div className="overflow-x-auto">
-              <table className="table-auto w-full rounded-md overflow-hidden mb-10 border border-gray-700">
-                <thead className="bg-gray-900 text-indigo-300">
-                  <tr>
-                    <th className="py-3 px-2 border-b border-gray-700 text-center">
-                      Site
-                    </th>
-                    <th className="py-3 px-2 border-b border-gray-700 text-center">
-                      Username
-                    </th>
-                    <th className="py-3 px-2 border-b border-gray-700 text-center">
-                      Password
-                    </th>
-                    <th className="py-3 px-2 border-b border-gray-700 text-center">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-950 text-gray-200">
-                  {passwordArray.map((item, index) => {
-                    return (
-                      <tr
-                        key={index}
-                        className="hover:bg-gray-900 transition-colors"
+            <section
+              className="mt-8 sm:mt-10"
+              aria-labelledby="credentials-title"
+            >
+              <div className="mb-4 grid gap-3 sm:mb-[18px] sm:flex sm:items-end sm:justify-between sm:gap-5">
+                <div>
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[.14em] text-indigo-600 dark:text-indigo-300">
+                      Private workspace
+                    </p>
+                    <h1
+                      id="credentials-title"
+                      className="mt-2 text-3xl font-black text-slate-950 dark:text-white"
+                    >
+                      Your vault
+                    </h1>
+                  </div>
+                  <p className="mt-1.5 text-[#a8b0c7]">
+                    {credentials.length} saved item
+                    {credentials.length === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <button
+                  className="w-full sm:w-auto min-h-10.5 rounded-xl border border-slate-300 bg-white text-slate-800 hover:border-indigo-400 dark:border-[#394363] dark:bg-[#121a36] px-[15px] dark:text-indigo-50 disabled:cursor-wait disabled:opacity-65"
+                  type="button"
+                  onClick={loadCredentials}
+                  disabled={loading}
+                >
+                  Refresh
+                </button>
+              </div>
+              <input
+                aria-label="Search credentials"
+                placeholder="Search by website or username"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="mb-5 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              />
+              {loading ? (
+                <div className="rounded-3xl border border-slate-200 bg-white/95 dark:border-[#29314c] dark:bg-[rgba(10,15,35,0.88)] p-5 sm:p-[clamp(1.5rem,5vw,2.625rem)] text-center text-[#a8b0c7] shadow-[0_14px_36px_rgba(79,70,229,0.10)] backdrop-blur-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  Loading encrypted vault...
+                </div>
+              ) : credentials.length === 0 ? (
+                <div className="rounded-3xl border border-slate-200 bg-white/95 dark:border-[#29314c] dark:bg-[rgba(10,15,35,0.88)] p-5 sm:p-[clamp(1.5rem,5vw,2.625rem)] text-center text-[#a8b0c7] shadow-[0_14px_36px_rgba(79,70,229,0.10)] backdrop-blur-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+                  No credentials saved yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-[18px] xl:grid-cols-2">
+                  {filteredCredentials.map((item) => (
+                    <article
+                      className="min-w-0 rounded-[20px] border border-slate-200 bg-white/95 dark:border-[#29314c] dark:bg-[rgba(10,15,35,0.88)] p-5 shadow-[0_8px_22px_rgba(79,70,229,0.07)] sm:p-[22px] backdrop-blur-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
+                      key={item.id}
+                    >
+                      <a
+                        href={item.site}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block overflow-hidden text-ellipsis whitespace-nowrap font-extrabold text-slate-700 dark:text-indigo-200"
                       >
-                        <td className="py-2 border-b border-gray-800 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <a
-                              href={item.site}
-                              target="_blank"
-                              className="hover:text-indigo-400 transition-colors"
-                            >
-                              {item.site}
-                            </a>
-                            <div
-                              className="lord-icon-copy cursor-pointer flex items-center"
-                              onClick={() => {
-                                copyText(item.site);
-                              }}
-                            >
-                              <lord-icon
-                                style={{ width: "22px", height: "22px" }}
-                                src="https://cdn.lordicon.com/iykgtsbt.json"
-                                trigger="hover"
-                                colors="primary:#a5b4fc"
-                              ></lord-icon>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 border-b border-gray-800 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            {item.Username}
-                            <div
-                              className="lord-icon-copy cursor-pointer flex items-center"
-                              onClick={() => {
-                                copyText(item.Username);
-                              }}
-                            >
-                              <lord-icon
-                                style={{ width: "22px", height: "22px" }}
-                                src="https://cdn.lordicon.com/iykgtsbt.json"
-                                trigger="hover"
-                                colors="primary:#a5b4fc"
-                              ></lord-icon>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 border-b border-gray-800 text-center md:w-1/3">
-                          <div className="flex items-center justify-center gap-3">
-                            <span className="tracking-widest w-32 inline-block overflow-hidden text-ellipsis whitespace-nowrap text-center">
-                              {visiblePasswords[item.id]
-                                ? item.Password
-                                : "•".repeat(item.Password.length)}
-                            </span>
-
-                            <span
-                              className="cursor-pointer flex items-center justify-center shrink-0 min-w-[24px] min-h-[24px]"
-                              onClick={() => showPassword(item.id)}
-                            >
-                              <img
-                                ref={ref}
-                                src={
-                                  visiblePasswords[item.id]
-                                    ? hideIcon
-                                    : viewIcon
-                                }
-                                alt="eye"
-                                className="brightness-0 invert h-5 w-5 shrink-0 opacity-70 hover:opacity-100 transition-opacity"
-                              />
-                            </span>
-                            <div
-                              className="lord-icon-copy flex cursor-pointer items-center"
-                              onClick={() => {
-                                copyText(item.Password);
-                              }}
-                            >
-                              <lord-icon
-                                style={{ width: "22px", height: "22px" }}
-                                src="https://cdn.lordicon.com/iykgtsbt.json"
-                                trigger="hover"
-                                colors="primary:#a5b4fc"
-                              ></lord-icon>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2 border-b border-gray-800 text-center">
-                          <div className="flex justify-center gap-3">
-                            <span
-                              className="cursor-pointer hover:scale-110 transition-transform"
-                              onClick={() => {
-                                editPassword(item.id);
-                              }}
-                            >
-                              <lord-icon
-                                src="https://cdn.lordicon.com/gwlusjdu.json"
-                                trigger="hover"
-                                style={{ width: "24px", height: "24px" }}
-                                colors="primary:#ffffff"
-                              ></lord-icon>
-                            </span>
-                            <span
-                              className="cursor-pointer hover:scale-110 transition-transform"
-                              onClick={() => {
-                                deletePassword(item.id);
-                              }}
-                            >
-                              <lord-icon
-                                src="https://cdn.lordicon.com/xyfswyxf.json"
-                                trigger="hover"
-                                style={{ width: "24px", height: "24px" }}
-                                colors="primary:#ef4444"
-                              ></lord-icon>
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+                        {item.site}
+                      </a>
+                      <dl className="my-4 grid gap-3 sm:my-[22px] sm:gap-3.5">
+                        <div>
+                          <dt className="text-xs uppercase tracking-[0.1em] text-[#7f8ba8]">
+                            Username
+                          </dt>
+                          <dd className="mt-1.5 overflow-wrap-anywhere">
+                            {item.username}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs uppercase tracking-[0.1em] text-[#7f8ba8]">
+                            Password
+                          </dt>
+                          <dd className="mt-1.5 overflow-wrap-anywhere font-mono">
+                            {visible[item.id]
+                              ? item.password
+                              : "•".repeat(Math.min(item.password.length, 16))}
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className="grid grid-cols-6 gap-2">
+                        <button
+                          className="col-span-2 inline-flex min-h-[38px] items-center justify-center gap-[7px] rounded-xl border border-slate-300 bg-white px-2 text-[0.78rem] text-slate-800 hover:border-indigo-400 dark:border-[#394363] dark:bg-[#121a36] dark:text-indigo-50"
+                          type="button"
+                          aria-label="Copy username"
+                          onClick={() => copyText(item.username, "Username")}
+                        >
+                          Copy user
+                        </button>
+                        <button
+                          className="col-span-2 inline-flex min-h-[38px] items-center justify-center gap-[7px] rounded-xl border border-slate-300 bg-white px-2 text-[0.78rem] text-slate-800 hover:border-indigo-400 dark:border-[#394363] dark:bg-[#121a36] dark:text-indigo-50"
+                          type="button"
+                          aria-label={
+                            visible[item.id] ? "Hide password" : "Show password"
+                          }
+                          aria-pressed={Boolean(visible[item.id])}
+                          onClick={() =>
+                            setVisible({
+                              ...visible,
+                              [item.id]: !visible[item.id],
+                            })
+                          }
+                        >
+                          <img
+                            src={visible[item.id] ? hideIcon : viewIcon}
+                            alt=""
+                            className="h-[17px] w-[17px] brightness-0 invert"
+                          />
+                          {visible[item.id] ? "Hide" : "Show"}
+                        </button>
+                        <button
+                          className="col-span-2 inline-flex min-h-[38px] items-center justify-center gap-[7px] rounded-xl border border-slate-300 bg-white px-2 text-[0.78rem] text-slate-800 hover:border-indigo-400 dark:border-[#394363] dark:bg-[#121a36] dark:text-indigo-50"
+                          type="button"
+                          aria-label="Copy password"
+                          onClick={() => copyText(item.password, "Password")}
+                        >
+                          Copy pass
+                        </button>
+                        <button
+                          className="col-span-3 inline-flex min-h-[38px] items-center justify-center gap-[7px] rounded-xl border border-slate-300 bg-white px-2 text-[0.78rem] text-slate-800 hover:border-indigo-400 dark:border-[#394363] dark:bg-[#121a36] dark:text-indigo-50"
+                          type="button"
+                          onClick={() => beginEdit(item)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="col-span-3 inline-flex min-h-[38px] items-center justify-center rounded-xl border border-red-300 bg-red-50 px-3 text-[0.78rem] font-semibold text-red-700 hover:bg-red-100 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200"
+                          onClick={() => removeCredential(item.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+      </section>
     </>
   );
-};
-
-export default Manager;
+}

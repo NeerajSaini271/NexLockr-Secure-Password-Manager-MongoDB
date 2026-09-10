@@ -1,8 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "tailwindcss";
-
-@layer components {
-  .mycontainer {
-    @apply container mx-auto px-40 py-16;
-  }
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+html {
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-sans);
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
 
+button,
+a,
+[role="button"] {
+  cursor: pointer;
+}

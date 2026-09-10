@@ -26,3 +26,7 @@ dist-ssr
 # Security: Ignore environment variables
 .env
 backend/.env
+.env.*
+backend/.env.*
+!.env.example
+!backend/.env.example

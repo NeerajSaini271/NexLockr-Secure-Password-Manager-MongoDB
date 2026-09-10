@@ -1,90 +1,90 @@
-# \<NexLockr /> - Secure Password Manager
+# NexLockr
 
-![NexLockr Interface](public/NexLockr.png)
+NexLockr is a full-stack encrypted credential vault built with React, Express, and MongoDB. The project was developed as a standalone application and is also presented in my professional portfolio.
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://nexlockr.netlify.app)
+> **Portfolio security notice:** NexLockr demonstrates authentication, owner isolation, and authenticated encryption. It has not undergone an independent security audit and should not be treated as a commercial password manager. Use fictional demonstration credentials in the public deployment.
 
-**NexLockr** is a secure, custom-designed, and highly responsive Password Manager application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to safely store, view, edit, and manage their web credentials in a sleek, dark-mode interface.
+## Security model
 
-## 🚀 Features
-- **Add Passwords:** Save website URLs, usernames, and passwords securely.
-- **Custom Visibility Toggle:** Engineered a state-driven "Show/Hide" eye toggle to instantly mask or unmask saved credentials on demand.
-- **Copy to Clipboard:** One-click copy functionality for quickly grabbing websites, usernames, and passwords.
-- **Edit & Delete:** Easily update existing credentials or remove them from the database.
-- **Premium Dark-Mode UI:** Fully overhauled frontend using **Tailwind CSS** for a modern, high-contrast, and custom user experience.
-- **Backend API:** Custom Node.js/Express server connecting to MongoDB for persistent data storage.
+- Account passwords are protected with Node.js `scrypt` and unique random salts.
+- Saved credential passwords are protected with AES-256-GCM authenticated encryption before MongoDB storage.
+- Encryption keys are supplied only through backend environment variables.
+- Sessions use random bearer tokens; only SHA-256 token hashes are stored in MongoDB.
+- Every credential query includes the authenticated owner identifier.
+- CORS is restricted through `FRONTEND_ORIGIN`.
+- Old plaintext records in the former `PassOP.passwords` collection are not exposed by the new API.
 
-## 🛠️ Tech Stack
-- **Frontend:** React (Vite), Tailwind CSS, React Toastify, Lottie/LordIcon
-- **Backend:** Node.js, Express.js, Body-Parser, CORS
-- **Database:** MongoDB (Atlas/Local)
-- **Deployment:** Netlify (Frontend)
+## Features
 
----
+- Registration, sign-in, sign-out, and expiring sessions
+- Owner-isolated encrypted credentials
+- Create, update, delete, reveal, and copy actions
+- Strict URL and request validation
+- Loading, empty, error, and busy states
+- Responsive credential cards and keyboard-accessible controls
+- Netlify-ready frontend and Render-ready API configuration
 
-## ⚙️ Installation & Setup (Run Locally)
+## Local setup
 
-If you want to run this project locally on your machine, follow these steps. You need to run both the **Frontend** and **Backend** terminals.
+Requirements: Node.js 20.19 or later, npm, and MongoDB.
 
-### 1. Prerequisites
-- [Node.js](https://nodejs.org/) installed.
-- [MongoDB Compass](https://www.mongodb.com/products/tools/compass) installed and running locally on `mongodb://localhost:27017` (or use a MongoDB Atlas URI).
-
-### 2. Setup Backend (Server)
-Open a terminal and navigate to the backend folder:
 ```bash
+npm install
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` folder and add your database connection string:
+Copy the example environment files:
 
-```env
-MONGO_URI=mongodb://localhost:27017
-# OR your MongoDB Atlas Connection String
+```text
+.env.example -> .env
+backend/.env.example -> backend/.env
 ```
 
-Start the server:
+Generate a backend encryption key without printing or committing a production key:
 
 ```bash
-node server.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-*The server will run on `http://localhost:3000`*
-
-### 3. Setup Frontend (Client)
-
-Open a **new** terminal (split terminal) in the project root:
+Start the backend:
 
 ```bash
-npm install
+cd backend
+npm start
+```
+
+Start the frontend in another terminal:
+
+```bash
 npm run dev
 ```
 
-*The application will run on `http://localhost:5173`*
+## Environment variables
 
----
+Frontend:
 
-## 📂 Project Structure
+- `VITE_API_BASE_URL`: API origin, such as `http://localhost:3000`
 
-```text
-NexLockr/
-├── backend/            # Express Server & MongoDB Logic
-│   ├── server.js       # API Routes (GET, POST, DELETE)
-│   └── package.json    # Backend dependencies
-├── public/             # Static Assets
-│   └── NexLockr.png    # Project Screenshot
-├── src/                # React Frontend
-│   ├── components/     # Navbar, Manager, Footer
-│   ├── App.jsx         # Main Component
-│   └── main.jsx        # Entry point
-└── index.html          # HTML Root
-```
+Backend:
 
-## 🤝 Contributing
+- `MONGO_URI`: MongoDB connection string
+- `DB_NAME`: database name, defaults to `NexLockr`
+- `FRONTEND_ORIGIN`: comma-separated permitted frontend origins
+- `VAULT_ENCRYPTION_KEY`: base64-encoded 32-byte encryption key
+- `SESSION_HOURS`: optional session lifetime
+- `PORT`: optional API port
 
-Feel free to fork this repository and submit pull requests to improve the UI or add features (like full user authentication!).
+## Deployment
 
----
+Deploy the API first and configure all backend environment variables. Then set `VITE_API_BASE_URL` for the frontend and deploy it. Never commit `.env` files or production keys.
 
-*Created by [Neeraj Saini](https://github.com/NeerajSaini271)*
+## Legacy data
+
+The previous implementation stored records without authentication or encryption in `PassOP.passwords`. Clear that legacy collection after exporting only fictional data. If any genuine password was ever entered, change it at the original service.
+
+## Author
+
+**Neeraj Kumar Saini**<br>
+MERN Stack Developer<br>
+[GitHub](https://github.com/NeerajSaini271)

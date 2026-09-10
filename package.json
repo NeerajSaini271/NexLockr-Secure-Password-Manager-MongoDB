@@ -1,5 +1,5 @@
 {
-  "name": "password",
+  "name": "nexlockr",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,14 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
-    "cors": "^2.8.5",
-    "express": "^5.2.1",
-    "lottie-react": "^2.4.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-toastify": "^11.0.5",
-    "tailwindcss": "^4.1.16",
-    "uuid": "^13.0.0"
+    "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

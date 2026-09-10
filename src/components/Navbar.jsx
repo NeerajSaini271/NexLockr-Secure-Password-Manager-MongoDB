@@ -1,36 +1,122 @@
-import React from "react";
-import githubIcon from "../assets/Github.svg";
-
-const Navbar = () => {
+import { useState } from "react";
+import GlowButton from "./GlowButton";
+import ThemeToggle from "./ThemeToggle";
+export default function Navbar({
+  page,
+  onNavigate,
+  theme,
+  onToggleTheme,
+  signedIn,
+  onSignOut,
+}) {
+  const [open, setOpen] = useState(false);
+  const go = (next) => {
+    setOpen(false);
+    onNavigate(next);
+  };
+  const link = (active) =>
+    `relative rounded-xl px-4 py-2 font-display text-sm font-bold transition ${active ? "text-indigo-600 after:absolute after:inset-x-4 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-indigo-500 after:via-cyan-400 after:to-violet-500 after:shadow-[0_0_12px_rgba(34,211,238,.85)] dark:text-white" : "text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-white"}`;
   return (
-    <nav className="bg-black/50 backdrop-blur-md border-b border-gray-800 text-white sticky top-0 z-50">
-      <div className="mycontainer flex justify-between items-center mx-auto px-4 py-3 h-16">
-        <div className="logo font-bold text-2xl tracking-wide">
-          <span className="text-indigo-500">&lt;</span>
-          <span className="text-white">Nex</span>
-          <span className="text-indigo-500">Lockr /&gt;</span>
-        </div>
-
-        <a
-          href="https://github.com/NeerajSaini271"
-          target="_blank"
-          rel="noreferrer"
-          className="relative inline-flex h-10 w-fit overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-50 hover:scale-105 transition-transform"
+    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/75 backdrop-blur-2xl dark:border-indigo-400/10 dark:bg-[#050816]/78">
+      <nav className="mx-auto flex h-[72px] w-[min(1180px,calc(100%-2rem))] items-center justify-between">
+        <button
+          onClick={() => go("home")}
+          className="cursor-pointer font-display text-xl font-bold tracking-[-.04em] text-slate-950 dark:text-white"
         >
-          <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-          <span className="inline-flex gap-2 h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-950 px-5 py-1 text-sm font-medium text-gray-50 backdrop-blur-3xl">
-            <img
-              className="brightness-0 invert w-5 h-5"
-              // src="src\assets\Github.svg"
-              src={githubIcon}
-              alt="Github Logo"
-            />
-            <span className="font-semibold">Github</span>
+          <span className="text-indigo-600 dark:text-indigo-400">&lt;</span>Nex
+          <span className="text-indigo-600 dark:text-indigo-400">
+            Lockr /&gt;
           </span>
-        </a>
-      </div>
-    </nav>
+        </button>
+        <div className="hidden items-center gap-1 md:flex">
+          <button onClick={() => go("home")} className={link(page === "home")}>
+            Home
+          </button>
+          <button
+            onClick={() => go("security")}
+            className={link(page === "security")}
+          >
+            Security
+          </button>
+          <button
+            onClick={() => go("vault")}
+            className={link(page === "vault")}
+          >
+            Vault
+          </button>
+          <a
+            href="https://github.com/NeerajSaini271/NexLockr-Secure-Password-Manager-MongoDB"
+            target="_blank"
+            rel="noreferrer"
+            className={link(false)}
+          >
+            GitHub
+          </a>
+          <div className="ml-3 flex items-center gap-4">
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            <GlowButton
+              onClick={signedIn ? onSignOut : () => go("vault")}
+              className="min-h-11 min-w-[132px]"
+            >
+              {signedIn ? "Sign out" : "Sign in"}
+            </GlowButton>
+          </div>
+        </div>
+        <button
+          onClick={() => setOpen(!open)}
+          className="grid h-11 w-11 place-items-center rounded-2xl border border-slate-300 bg-white font-display text-xl dark:border-slate-700 dark:bg-slate-900 md:hidden"
+          aria-label="Toggle navigation"
+          aria-expanded={open}
+        >
+          ☰
+        </button>
+      </nav>
+      {open && (
+        <div className="absolute inset-x-4 top-[72px] z-50 grid gap-1.5 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-[#080d22] md:hidden">
+          <button
+            className={link(page === "home") + " w-full text-left"}
+            onClick={() => go("home")}
+          >
+            Home
+          </button>
+          <button
+            className={link(page === "security") + " w-full text-left"}
+            onClick={() => go("security")}
+          >
+            Security
+          </button>
+          <button
+            className={link(page === "vault") + " w-full text-left"}
+            onClick={() => go("vault")}
+          >
+            Vault
+          </button>
+          <a
+            className="rounded-xl px-4 py-2 text-left font-display text-sm font-bold text-slate-600 dark:text-slate-300"
+            href="https://github.com/NeerajSaini271/NexLockr-Secure-Password-Manager-MongoDB"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <div className="mt-1 flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700">
+            <span className="font-display text-sm font-bold text-slate-600 dark:text-slate-300">
+              Theme
+            </span>
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          </div>
+          <GlowButton
+            onClick={() => {
+              setOpen(false);
+              if (signedIn) onSignOut();
+              else go("vault");
+            }}
+            className="mt-1 w-full"
+          >
+            {signedIn ? "Sign out" : "Sign in"}
+          </GlowButton>
+        </div>
+      )}
+    </header>
   );
-};
-
-export default Navbar;
+}
