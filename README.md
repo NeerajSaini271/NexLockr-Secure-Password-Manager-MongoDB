@@ -1,60 +1,132 @@
-# NexLockr
+<p align="center">
+  <img src="./public/NexLockrLogo.svg" alt="NexLockr shield logo" width="120" />
+</p>
 
-NexLockr is a full-stack encrypted credential vault built with React, Express, and MongoDB. The project was developed as a standalone application and is also presented in my professional portfolio.
+<h1 align="center">NexLockr</h1>
 
-> **Portfolio security notice:** NexLockr demonstrates authentication, owner isolation, and authenticated encryption. It has not undergone an independent security audit and should not be treated as a commercial password manager. Use fictional demonstration credentials in the public deployment.
+<p align="center">
+  An authenticated, owner-isolated credential vault with AES-256-GCM encrypted password storage.
+</p>
+
+<p align="center">
+  Built with React, Express, MongoDB, Tailwind CSS, and Vite.
+</p>
+
+---
+
+## Overview
+
+NexLockr is a full-stack encrypted credential vault built as a standalone application and presented in my professional portfolio.
+
+> [!WARNING]
+> NexLockr demonstrates authentication, account isolation, and authenticated encryption. It has not undergone an independent security audit and should not be treated as a commercial password manager. Use only fictional demonstration credentials in the public deployment.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="./public/screenshots/home-dark.png" alt="NexLockr Home page in dark mode" width="100%" />
+    </td>
+    <td width="50%" valign="top">
+      <img src="./public/screenshots/home-light.png" alt="NexLockr Home page in light mode" width="100%" />
+    </td>
+  </tr>
+</table>
 
 ## Security model
 
 - Account passwords are protected with Node.js `scrypt` and unique random salts.
-- Saved credential passwords are protected with AES-256-GCM authenticated encryption before MongoDB storage.
+- Saved credential passwords are encrypted with AES-256-GCM before MongoDB storage.
+- Every encrypted value has a random initialization vector and authentication tag.
 - Encryption keys are supplied only through backend environment variables.
-- Sessions use random bearer tokens; only SHA-256 token hashes are stored in MongoDB.
+- Sessions use random bearer tokens, while only SHA-256 token hashes are stored.
 - Every credential query includes the authenticated owner identifier.
-- CORS is restricted through `FRONTEND_ORIGIN`.
-- Old plaintext records in the former `PassOP.passwords` collection are not exposed by the new API.
+- Registration and sign-in routes have stricter rate limits.
+- Helmet security headers and restricted CORS origins protect the API.
+- Request bodies are limited to 16 KB.
+- Expired sessions are removed through a MongoDB TTL index.
+- The API waits for MongoDB before accepting requests.
+- Graceful shutdown closes the HTTP server and MongoDB connection.
+- Legacy plaintext records are not exposed by the new API.
 
 ## Features
 
 - Registration, sign-in, sign-out, and expiring sessions
 - Owner-isolated encrypted credentials
-- Create, update, delete, reveal, and copy actions
+- Create, update, delete, reveal, search, and copy actions
 - Strict URL and request validation
 - Loading, empty, error, and busy states
-- Responsive credential cards and keyboard-accessible controls
-- Netlify-ready frontend and Render-ready API configuration
+- Responsive credential cards
+- Keyboard-accessible controls
+- Persistent light and dark themes
+- Responsive desktop and mobile navigation
+- Focused backend security and API integration tests
+- Netlify-ready frontend and Render-ready backend
+
+## Technology stack
+
+### Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- React Toastify
+
+### Backend
+
+- Node.js
+- Express
+- MongoDB
+- Helmet
+- Node.js Crypto
 
 ## Local setup
 
-Requirements: Node.js 20.19 or later, npm, and MongoDB.
+### Requirements
+
+- Node.js 20.19 or later
+- npm
+- MongoDB
+
+### Install frontend dependencies
 
 ```bash
 npm install
+```
+
+### Install backend dependencies
+
+```bash
 cd backend
 npm install
 ```
 
-Copy the example environment files:
+### Configure environment files
+
+Create the local environment files from the examples:
 
 ```text
 .env.example -> .env
 backend/.env.example -> backend/.env
 ```
 
-Generate a backend encryption key without printing or committing a production key:
+Generate a local backend encryption key:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-Start the backend:
+Never commit the generated encryption key.
+
+### Start the backend
 
 ```bash
 cd backend
 npm start
 ```
 
-Start the frontend in another terminal:
+### Start the frontend
+
+In another terminal:
 
 ```bash
 npm run dev
@@ -62,29 +134,96 @@ npm run dev
 
 ## Environment variables
 
-Frontend:
+### Frontend
 
-- `VITE_API_BASE_URL`: API origin, such as `http://localhost:3000`
+```text
+VITE_API_BASE_URL
+```
 
-Backend:
+The origin of the deployed API, such as:
 
-- `MONGO_URI`: MongoDB connection string
-- `DB_NAME`: database name, defaults to `NexLockr`
-- `FRONTEND_ORIGIN`: comma-separated permitted frontend origins
-- `VAULT_ENCRYPTION_KEY`: base64-encoded 32-byte encryption key
-- `SESSION_HOURS`: optional session lifetime
-- `PORT`: optional API port
+```text
+http://localhost:3000
+```
+
+### Backend
+
+```text
+MONGO_URI
+DB_NAME
+FRONTEND_ORIGIN
+VAULT_ENCRYPTION_KEY
+SESSION_HOURS
+PORT
+NODE_ENV
+```
+
+## Testing and validation
+
+Run backend syntax validation:
+
+```bash
+cd backend
+npm run check
+```
+
+Run the focused backend security and API tests:
+
+```bash
+npm test
+```
+
+Run frontend linting from the repository root:
+
+```bash
+npm run lint
+```
+
+Create a production frontend build:
+
+```bash
+npm run build
+```
+
+The focused backend test suite covers:
+
+- Password hashing and verification
+- AES-256-GCM encryption and decryption
+- Ciphertext and authentication-tag tampering
+- Credential and URL validation
+- Rate limiting
+- Registration and invalid login rejection
+- Missing authentication rejection
+- Encrypted credential persistence
+- Credential CRUD
+- Invalid credential identifiers
+- Logout and session invalidation
+- Cross-account owner isolation
 
 ## Deployment
 
-Deploy the API first and configure all backend environment variables. Then set `VITE_API_BASE_URL` for the frontend and deploy it. Never commit `.env` files or production keys.
+1. Deploy the backend first.
+2. Configure all backend environment variables.
+3. Verify the `/api/health` endpoint.
+4. Set `VITE_API_BASE_URL` to the deployed backend origin.
+5. Add the deployed frontend origin to `FRONTEND_ORIGIN`.
+6. Deploy the frontend.
+7. Verify registration, sign-in, CRUD, logout, CORS, themes, and responsive layouts.
+
+Never commit `.env` files or production encryption keys.
+
+> [!IMPORTANT]
+> Keep `VAULT_ENCRYPTION_KEY` stable after deployment. Changing the key makes previously encrypted credential passwords unreadable.
 
 ## Legacy data
 
-The previous implementation stored records without authentication or encryption in `PassOP.passwords`. Clear that legacy collection after exporting only fictional data. If any genuine password was ever entered, change it at the original service.
+The earlier implementation stored records without authentication or encryption in the `PassOP.passwords` collection.
+
+Clear that legacy collection after preserving only clearly fictional records. If any genuine password was ever entered, change the password at the original service.
 
 ## Author
 
 **Neeraj Kumar Saini**<br>
-MERN Stack Developer<br>
+MERN Stack Developer
+
 [GitHub](https://github.com/NeerajSaini271)
